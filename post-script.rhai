@@ -7,6 +7,12 @@
 // cd's into the template repo's working tree.
 file::rename("_rust-toolchain.toml", "rust-toolchain.toml");
 
+// Rename _README.md -> README.md. The template repo's own README.md
+// (the GitHub-displayed one with cargo-generate usage docs) is kept
+// out of generated projects via the [template] ignore list; the
+// per-project README ships as _README.md and is renamed here.
+file::rename("_README.md", "README.md");
+
 print("\n");
 print("✓ Project scaffolded.\n");
 print("\n");

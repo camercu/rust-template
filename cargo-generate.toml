@@ -1,7 +1,11 @@
 [template]
 cargo_generate_version = ">=0.21.0"
+# README.md is the template repo's own GitHub-displayed docs and must
+# NOT be shipped to generated projects (which get _README.md renamed by
+# post-script.rhai). LICENSE belongs to the template repo, not generated
+# projects.
 ignore = [
-    "TEMPLATE.md",
+    "README.md",
     "LICENSE",
 ]
 # Liquid-process only these files. Everything else is copied verbatim.
@@ -10,7 +14,7 @@ ignore = [
 include = [
     "Cargo.toml",
     "package.json",
-    "README.md",
+    "_README.md",
     "_rust-toolchain.toml",
     ".tool-versions",
     "scripts/setup-dev.sh",
