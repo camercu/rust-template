@@ -1,0 +1,13 @@
+{
+  "name": "{{project-name}}-tooling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Node-based developer tooling for the {{project-name}} Rust project (commitlint and, optionally, semantic-release).",
+  "scripts": {
+    "commitlint": "commitlint --edit"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0"
+  }
+}

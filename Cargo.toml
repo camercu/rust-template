@@ -1,0 +1,25 @@
+[package]
+name = "{{project-name}}"
+description = ""
+version = "0.1.0"
+edition = "2024"
+rust-version = "{{rust_toolchain_version}}"
+license = "{{license}}"
+repository = "https://github.com/{{gh_username}}/{{project-name}}"
+authors = ["{{authors}}"]
+
+{% if kind == "binary" -%}
+[[bin]]
+name = "{{project-name}}"
+path = "src/main.rs"
+
+{% endif -%}
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[dependencies]

@@ -1,0 +1,57 @@
+[template]
+cargo_generate_version = ">=0.21.0"
+ignore = [
+    "TEMPLATE.md",
+    "LICENSE",
+]
+# Liquid-process only these files. Everything else is copied verbatim.
+# This avoids `{{...}}` collisions with the justfile's own variable
+# interpolation syntax and similar template sigils used by other tools.
+include = [
+    "Cargo.toml",
+    "package.json",
+    "README.md",
+    "_rust-toolchain.toml",
+    ".tool-versions",
+    "scripts/setup-dev.sh",
+    "src/lib.rs",
+    "src/main.rs",
+]
+
+[hooks]
+post = ["post-script.rhai"]
+
+# ── Prompts ─────────────────────────────────────────────────
+# Built-in placeholders provided by cargo-generate (auto-populated, not
+# overridable here): `project-name`, `crate_name`, `crate_type`, `authors`,
+# `os-arch`. The `authors` placeholder is auto-derived from `git config`.
+
+[placeholders.gh_username]
+type = "string"
+prompt = "GitHub username or org (used for repository URL)"
+default = "camercu"
+
+[placeholders.license]
+type = "string"
+prompt = "License"
+choices = ["MIT OR Apache-2.0", "MIT", "Apache-2.0", "MPL-2.0"]
+default = "MIT OR Apache-2.0"
+
+[placeholders.kind]
+type = "string"
+prompt = "Crate kind"
+choices = ["library", "binary"]
+default = "library"
+
+[placeholders.rust_toolchain_version]
+type = "string"
+prompt = "Pinned Rust toolchain version"
+default = "1.88.0"
+
+# ── Conditional file removal ────────────────────────────────
+
+[conditional.'kind == "library"']
+ignore = ["src/main.rs"]
+
+[conditional.'kind == "binary"']
+ignore = ["src/lib.rs"]

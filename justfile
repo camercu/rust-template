@@ -1,0 +1,100 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+warnings := "-D warnings"
+stable_toolchain := "+stable"
+
+default:
+    @just --list
+
+# ── Formatting ──────────────────────────────────────────────
+
+fmt:
+    cargo fmt --all
+
+fmt-check:
+    cargo fmt --all --check
+
+# ── Linting ─────────────────────────────────────────────────
+
+lint: fmt-check lint-clippy lint-typos lint-deny
+
+lint-clippy:
+    cargo clippy --all-targets --workspace -- {{warnings}}
+
+lint-clippy-stable:
+    cargo {{stable_toolchain}} clippy --all-targets --workspace
+
+lint-typos:
+    typos
+
+lint-deny:
+    cargo deny check advisories licenses bans sources
+
+# ── Testing ─────────────────────────────────────────────────
+
+test:
+    cargo test --workspace
+
+test-stable:
+    cargo {{stable_toolchain}} test --workspace
+
+# ── Building / checking ─────────────────────────────────────
+
+build:
+    cargo build --workspace --all-targets
+
+# ── Documentation ───────────────────────────────────────────
+
+doc:
+    RUSTDOCFLAGS="{{warnings}}" cargo doc --workspace --no-deps
+
+# ── Tool versions ───────────────────────────────────────────
+
+check-tool-versions:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    drift=0
+    while read -r name version; do
+        case "$name" in
+            rust)          actual=$(rustc --version | awk '{print $2}') ;;
+            just)          actual=$(just --version | awk '{print $2}') ;;
+            cargo-deny)    actual=$(cargo-deny --version | awk '{print $2}') ;;
+            cargo-nextest) actual=$(cargo nextest --version | head -1 | awk '{print $2}') ;;
+            typos-cli)     actual=$(typos --version | awk '{print $2}') ;;
+            taplo-cli)     actual=$(taplo --version | awk '{print $2}') ;;
+            *)             continue ;;
+        esac
+        if [ "$actual" != "$version" ]; then
+            printf '  %-14s pinned=%s  actual=%s\n' "$name" "$version" "$actual"
+            drift=1
+        fi
+    done < <(grep -v '^#' .tool-versions | grep -v '^$')
+    if [ "$drift" -eq 1 ]; then
+        echo "tool versions have drifted from .tool-versions"
+        exit 1
+    else
+        echo "all tool versions match .tool-versions"
+    fi
+
+# ── Setup ───────────────────────────────────────────────────
+
+setup:
+    ./scripts/setup-dev.sh
+
+# ── Hooks ───────────────────────────────────────────────────
+
+# Fast checks run on every git commit via pre-commit.
+pre-commit: fmt-check lint-typos
+    cargo check --all-targets --workspace --quiet
+
+# Slower checks run on every git push via pre-commit.
+pre-push:
+    RUSTFLAGS="{{warnings}}" RUSTDOCFLAGS="{{warnings}}" just lint-clippy test doc
+
+# ── CI ──────────────────────────────────────────────────────
+
+ci: fmt-check lint test build doc
+
+# Stable-channel best-effort sanity check; runs in a continue-on-error
+# CI job so toolchain regressions surface without blocking PR merge.
+ci-stable: lint-clippy-stable test-stable
