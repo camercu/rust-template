@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# `release-plz` operates in PR mode: a push to `main` opens or updates
+# a "Release v{version}" PR with the bump + CHANGELOG.md entry. The
+# PR's CI run (the canonical-gate job in ci.yml) gates the release.
+# When the PR is merged, the same workflow fires on the resulting
+# push, sees the release commit, tags it, and cuts a GitHub Release.
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-plz-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-plz:
+    name: release-plz
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse .tool-versions
+        id: tools
+        run: |
+          while read -r name version; do
+            # GitHub output names use underscores; tool names use hyphens.
+            echo "${name//-/_}=${version}" >> "$GITHUB_OUTPUT"
+          done < <(grep -v '^#' .tool-versions | grep -v '^$')
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.tools.outputs.rust }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      # The action defaults to running `release-pr` followed by
+      # `release` in one step, which matches the two phases of the
+      # PR-based flow (open/update the PR, then release on merge).
+      # CARGO_REGISTRY_TOKEN is exported even though `publish = false`
+      # in release-plz.toml so enabling crates.io publish later is a
+      # single-key edit there.
+      - uses: MarcoIeni/release-plz-action@v0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_KEY }}

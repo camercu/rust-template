@@ -2,10 +2,15 @@
 /target/
 **/target/
 
-# Cargo.lock is tracked (workspace contains a binary)
+# Cargo.lock is tracked by default. The release workflow's
+# `semantic-release-cargo` plugin updates it during version bumps and
+# the `@semantic-release/git` plugin commits it back. For library
+# crates that prefer not to track Cargo.lock, add `/Cargo.lock` below
+# and drop it from the `assets` list in `.releaserc.json`.
 
 # direnv / Nix
 /.direnv/
+/.envrc.local
 
 # Editor / IDE
 *.swp

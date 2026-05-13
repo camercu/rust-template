@@ -11,6 +11,7 @@
 - **Spell check** via `typos`
 - **TOML formatting** via `taplo`
 - **GitHub Actions CI** with a canonical-gate job (pinned tools), stable-advisory job (continue-on-error), and PR commitlint job
+- **Automated releases** via [`release-plz`](https://release-plz.dev/): every push to `main` opens or updates a `chore: release v<version>` PR with the bump + `CHANGELOG.md` entry; merging the PR tags and cuts the GitHub Release. The job is gated on a GitHub `environment: release` (one-time setup under *Settings → Environments*) so secrets and required reviewers live in one place. Crates.io publish is wired but disabled by default — flipping `publish = false → true` in `release-plz.toml` turns it on once `CRATES_API_KEY` is set in the environment. `[workspace.dependencies]` versions stay in lockstep with `[workspace.package].version` automatically; the changelog/bump rules are configurable in `release-plz.toml` (default: `feat`/breaking → minor, `fix`/`perf` → patch, `fix(ci)`/`chore`/etc. → skipped).
 - **Workspace lints**: `forbid(unsafe_code)`, `warn(missing_docs)`, clippy `all` + `pedantic`
 
 ## Usage
@@ -78,6 +79,8 @@ rust-template/
 ├── .prettierrc.yaml
 ├── scripts/setup-dev.sh
 ├── .github/workflows/ci.yml
+├── .github/workflows/release.yml
+├── release-plz.toml            # release-plz config (publish disabled)
 └── src/
     ├── lib.rs               # included only for kind == "library"
     └── main.rs              # included only for kind == "binary"

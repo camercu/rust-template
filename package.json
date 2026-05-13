@@ -2,7 +2,7 @@
   "name": "{{project-name}}-tooling",
   "version": "0.0.0",
   "private": true,
-  "description": "Node-based developer tooling for the {{project-name}} Rust project (commitlint and, optionally, semantic-release).",
+  "description": "Node-based developer tooling for the {{project-name}} Rust project (commitlint).",
   "scripts": {
     "commitlint": "commitlint --edit"
   },

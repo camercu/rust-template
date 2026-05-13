@@ -4,22 +4,19 @@ cargo_generate_version = ">=0.21.0"
 # NOT be shipped to generated projects (which get _README.md renamed by
 # post-script.rhai). LICENSE belongs to the template repo, not generated
 # projects.
-ignore = [
-    "README.md",
-    "LICENSE",
-]
+ignore = ["README.md", "LICENSE"]
 # Liquid-process only these files. Everything else is copied verbatim.
 # This avoids `{{...}}` collisions with the justfile's own variable
 # interpolation syntax and similar template sigils used by other tools.
 include = [
-    "Cargo.toml",
-    "package.json",
-    "_README.md",
-    "_rust-toolchain.toml",
-    ".tool-versions",
-    "scripts/setup-dev.sh",
-    "src/lib.rs",
-    "src/main.rs",
+  "Cargo.toml",
+  "package.json",
+  "_README.md",
+  "_rust-toolchain.toml",
+  ".tool-versions",
+  "scripts/setup-dev.sh",
+  "src/lib.rs",
+  "src/main.rs",
 ]
 
 [hooks]
