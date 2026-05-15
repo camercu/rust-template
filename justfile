@@ -48,8 +48,15 @@ lint-deny:
 test:
     cargo test --workspace
 
+# Latest-stable sanity check. Skips any `compile_fixtures` test
+# (typically a trybuild harness whose `.stderr` snapshots are
+# byte-exact against the canonical toolchain pinned in
+# `.tool-versions`); rustc diagnostic text drifts between minor
+# releases and would otherwise break this advisory job every time
+# stable ticks. The canonical-gate job (`just test`) runs every
+# test, including the fixtures, on the pinned toolchain.
 test-stable:
-    cargo {{stable_toolchain}} test --workspace
+    cargo {{stable_toolchain}} test --workspace -- --skip compile_fixtures
 
 # ── Building / checking ─────────────────────────────────────
 
