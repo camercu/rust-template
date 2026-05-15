@@ -45,8 +45,12 @@ lint-deny:
 
 # ── Testing ─────────────────────────────────────────────────
 
+# Two passes because nextest does not yet support doc-tests upstream;
+# `cargo test --doc` covers them, `nextest` covers unit + integration
+# tests with parallel execution + better output.
 test:
-    cargo test --workspace
+    cargo nextest run --workspace
+    cargo test --workspace --doc
 
 # Latest-stable sanity check. Skips any `compile_fixtures` test
 # (typically a trybuild harness whose `.stderr` snapshots are
@@ -56,7 +60,8 @@ test:
 # stable ticks. The canonical-gate job (`just test`) runs every
 # test, including the fixtures, on the pinned toolchain.
 test-stable:
-    cargo {{stable_toolchain}} test --workspace -- --skip compile_fixtures
+    cargo {{stable_toolchain}} nextest run --workspace -E 'not test(compile_fixtures)'
+    cargo {{stable_toolchain}} test --workspace --doc
 
 # ── Building / checking ─────────────────────────────────────
 
@@ -83,7 +88,13 @@ check-tool-versions:
             typos-cli)     actual=$(typos --version | awk '{print $2}') ;;
             taplo-cli)     actual=$(taplo --version | awk '{print $2}') ;;
             nodejs)        actual=$(node --version | sed 's/^v//') ;;
-            *)             continue ;;
+            *)
+                # Loud failure: a new entry in `.tool-versions` without
+                # a matching case here would otherwise drift silently.
+                printf '  %-14s unrecognized (add a case to check-tool-versions)\n' "$name"
+                drift=1
+                continue
+                ;;
         esac
         if [ "$actual" != "$version" ]; then
             printf '  %-14s pinned=%s  actual=%s\n' "$name" "$version" "$actual"
@@ -116,15 +127,17 @@ setup:
 
 # ── Hooks ───────────────────────────────────────────────────
 
-# Fast checks run on every git commit via pre-commit.
-pre-commit: fmt-check lint-typos
+# Fast checks run on every git commit via pre-commit. Mirrors the
+# fast tier of `just lint` (fmt + typos + taplo); the heavier checks
+# (clippy, deny, tests) live in `just pre-push`.
+pre-commit: fmt-check lint-typos lint-taplo
     cargo check --all-targets --workspace --quiet
 
-# Slower checks run on every git push via pre-commit. lint-deny and
-# lint-typos are cheap (sub-second) and surface advisory/typo drift
-# before it hits a remote runner.
+# Slower checks run on every git push via pre-commit. Mirrors `just
+# ci` so anything red in CI was already red locally; the gap that
+# previously skipped lint-taplo allowed taplo drift to land on main.
 pre-push:
-    RUSTFLAGS="{{warnings}}" RUSTDOCFLAGS="{{warnings}}" just lint-clippy lint-typos lint-deny test doc
+    RUSTFLAGS="{{warnings}}" RUSTDOCFLAGS="{{warnings}}" just lint test doc build
 
 # ── CI ──────────────────────────────────────────────────────
 
