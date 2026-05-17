@@ -11,7 +11,7 @@
 - **Spell check** via `typos`
 - **TOML formatting** via `taplo`
 - **GitHub Actions CI** with a canonical-gate job (pinned tools), stable-advisory job (continue-on-error), and PR commitlint job
-- **Automated releases** via [`release-plz`](https://release-plz.dev/): every push to `main` opens or updates a `chore: release v<version>` PR with the bump + `CHANGELOG.md` entry; merging the PR tags and cuts the GitHub Release. The job is gated on a GitHub `environment: release` (one-time setup under *Settings → Environments*) so secrets and required reviewers live in one place. Crates.io publish is wired but disabled by default — flipping `publish = false → true` in `release-plz.toml` turns it on once `CRATES_API_KEY` is set in the environment. `[workspace.dependencies]` versions stay in lockstep with `[workspace.package].version` automatically; the changelog/bump rules are configurable in `release-plz.toml` (default: `feat`/breaking → minor, `fix`/`perf` → patch, `fix(ci)`/`chore`/etc. → skipped).
+- **Automated releases** via [`semantic-release`](https://semantic-release.gitbook.io/) + [`semantic-release-cargo`](https://www.npmjs.com/package/semantic-release-cargo): every successful CI run on `main` triggers a release pass that bumps `Cargo.toml` + `Cargo.lock`, appends a `CHANGELOG.md` entry, pushes the `chore(release): <version>` commit directly to `main`, tags `v<version>`, and cuts a GitHub Release with the generated notes. The job is gated on a GitHub `environment: release` (one-time setup under *Settings → Environments*) so secrets and required reviewers live in one place. Crates.io publish is wired but disabled by default — flipping `"publish": false → true` in the `semantic-release-cargo` plugin block of `.releaserc.json` turns it on once `CRATES_API_KEY` is set in the environment. Bump rules are configurable in `.releaserc.json`'s `releaseRules` (default: `feat`/breaking → minor, `fix`/`perf`/`revert` → patch, `fix(ci)`/`chore`/etc. → skipped).
 - **Workspace lints**: `forbid(unsafe_code)`, `warn(missing_docs)`, clippy `all` + `pedantic`
 
 ## Usage
@@ -80,7 +80,8 @@ rust-template/
 ├── scripts/setup-dev.sh
 ├── .github/workflows/ci.yml
 ├── .github/workflows/release.yml
-├── release-plz.toml            # release-plz config (publish disabled)
+├── .releaserc.json             # semantic-release config (cargo publish disabled)
+├── .taplo.toml                 # taplo exclusions (node_modules, target)
 └── src/
     ├── lib.rs               # included only for kind == "library"
     └── main.rs              # included only for kind == "binary"
