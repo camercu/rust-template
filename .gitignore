@@ -8,6 +8,10 @@
 # crates that prefer not to track Cargo.lock, add `/Cargo.lock` below
 # and drop it from the `assets` list in `.releaserc.json`.
 
+# Coverage artifacts (cargo-llvm-cov)
+*.profraw
+*.profdata
+
 # direnv / Nix
 /.direnv/
 /.envrc.local
