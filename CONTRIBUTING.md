@@ -1,6 +1,6 @@
 # Contributing
 
-[![CI](https://github.com/{{ gh_user }}/{{project-name}}/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/{{ gh_user }}/{{project-name}}/actions/workflows/ci.yml)
+[![CI](https://github.com/{{gh_username}}/{{project-name}}/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/{{gh_username}}/{{project-name}}/actions/workflows/ci.yml)
 
 ## First-time setup
 
@@ -131,4 +131,4 @@ any branch-protection rules must permit pushes from
 
 ## Reporting issues
 
-File an issue at <https://github.com/{{ gh_user }}/{{project-name}}/issues>.
+File an issue at <https://github.com/{{gh_username}}/{{project-name}}/issues>.

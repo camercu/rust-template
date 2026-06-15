@@ -12,6 +12,7 @@ include = [
   "Cargo.toml",
   "package.json",
   "_README.md",
+  "CONTRIBUTING.md",
   "_rust-toolchain.toml",
   ".tool-versions",
   "scripts/setup-dev.sh",
