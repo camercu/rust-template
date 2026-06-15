@@ -8,12 +8,9 @@ license = "{{license}}"
 repository = "https://github.com/{{gh_username}}/{{project-name}}"
 authors = ["{{authors}}"]
 
-{% if kind == "binary" -%}
-[[bin]]
-name = "{{project-name}}"
-path = "src/main.rs"
-
-{% endif -%}
+# Binary crates rely on cargo's target autodiscovery: src/main.rs becomes
+# a binary named after the package. Library crates have src/main.rs removed
+# by the conditional file rule in cargo-generate.toml, so no [[bin]] here.
 [lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
