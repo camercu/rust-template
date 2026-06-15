@@ -23,7 +23,7 @@ fmt-check:
 
 # ── Linting ─────────────────────────────────────────────────
 
-lint: fmt-check lint-clippy lint-typos lint-taplo lint-deny
+lint: fmt-check lint-clippy lint-typos lint-taplo lint-actions lint-deny
 
 lint-clippy:
     cargo clippy --all-targets --workspace -- {{warnings}}
@@ -39,6 +39,12 @@ lint-typos:
 # into a review.
 lint-taplo:
     taplo format --check
+
+# Lint GitHub Actions workflows (syntax, expression typos, shell issues
+# in `run:` blocks via shellcheck). Catches workflow bugs that otherwise
+# only surface on a pushed CI run.
+lint-actions:
+    actionlint
 
 lint-deny:
     cargo deny check advisories licenses bans sources
@@ -104,6 +110,7 @@ check-tool-versions:
             cargo-nextest) actual=$(cargo nextest --version | head -1 | awk '{print $2}') ;;
             typos-cli)     actual=$(typos --version | awk '{print $2}') ;;
             taplo-cli)     actual=$(taplo --version | awk '{print $2}') ;;
+            actionlint)    actual=$(actionlint --version | head -1) ;;
             cargo-llvm-cov) actual=$(cargo llvm-cov --version | awk '{print $2}') ;;
             nodejs)        actual=$(node --version | sed 's/^v//') ;;
             *)

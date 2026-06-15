@@ -38,7 +38,7 @@ jobs:
 
       - uses: taiki-e/install-action@v2
         with:
-          tool: just@${{ steps.tools.outputs.just }},cargo-deny@${{ steps.tools.outputs.cargo_deny }},cargo-nextest@${{ steps.tools.outputs.cargo_nextest }},typos-cli@${{ steps.tools.outputs.typos_cli }},taplo-cli@${{ steps.tools.outputs.taplo_cli }},cargo-llvm-cov@${{ steps.tools.outputs.cargo_llvm_cov }}
+          tool: just@${{ steps.tools.outputs.just }},cargo-deny@${{ steps.tools.outputs.cargo_deny }},cargo-nextest@${{ steps.tools.outputs.cargo_nextest }},typos-cli@${{ steps.tools.outputs.typos_cli }},taplo-cli@${{ steps.tools.outputs.taplo_cli }},actionlint@${{ steps.tools.outputs.actionlint }},cargo-llvm-cov@${{ steps.tools.outputs.cargo_llvm_cov }}
 
       - name: just ci
         run: just ci
