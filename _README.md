@@ -53,7 +53,7 @@ Prerequisites (one-time, on the repository):
    here if you want manual approval / branch protection on the
    release job.
 2. Add a `CRATES_API_KEY` environment secret with a crates.io API
-   token scoped for publishing (https://crates.io/me) — only needed
+   token scoped for publishing (<https://crates.io/me>) — only needed
    when you flip `publish` on.
 3. Allow GitHub Actions to push to protected branches. The release
    job commits `Cargo.toml` / `Cargo.lock` / `CHANGELOG.md` directly

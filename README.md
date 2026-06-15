@@ -58,7 +58,7 @@ cargo generate --path /path/to/rust-template --name throwaway --destination /tmp
 
 ## Layout (template root)
 
-```
+```text
 rust-template/
 ├── cargo-generate.toml      # Liquid placeholders + conditional file rules
 ├── post-script.rhai         # rhai hook: rename _README.md + _rust-toolchain.toml

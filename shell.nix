@@ -18,6 +18,7 @@ pkgs.mkShell {
     cargo-nextest
     typos
     taplo
+    markdownlint-cli2
     actionlint
     nodejs_22
     # cargo-llvm-cov is omitted: the nixpkgs derivation is marked broken
