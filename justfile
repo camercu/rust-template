@@ -3,6 +3,13 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 warnings := "-D warnings"
 stable_toolchain := "+stable"
 
+# cargo driver. Defaults to plain `cargo`; set RTK_CARGO="rtk cargo" (see the
+# `ci-rtk` target) to route the compile-heavy recipes through rtk for
+# token-compressed output. Only used where rtk compresses the subcommand and the
+# output is for reading — recipes whose output is consumed (coverage lcov,
+# tool-version parsing) stay on plain cargo.
+cargo := env("RTK_CARGO", "cargo")
+
 default:
     @just --list
 
@@ -26,7 +33,7 @@ fmt-check:
 lint: fmt-check lint-clippy lint-typos lint-taplo lint-markdown lint-actions lint-deny
 
 lint-clippy:
-    cargo clippy --all-targets --workspace -- {{warnings}}
+    {{cargo}} clippy --all-targets --workspace -- {{warnings}}
 
 lint-clippy-stable:
     cargo {{stable_toolchain}} clippy --all-targets --workspace
@@ -61,8 +68,8 @@ lint-deny:
 # `cargo test --doc` covers them, `nextest` covers unit + integration
 # tests with parallel execution + better output.
 test:
-    cargo nextest run --workspace
-    cargo test --workspace --doc
+    {{cargo}} nextest run --workspace
+    {{cargo}} test --workspace --doc
 
 # Latest-stable sanity check. Skips any `compile_fixtures` test
 # (typically a trybuild harness whose `.stderr` snapshots are
@@ -95,7 +102,7 @@ alias cov-lcov := coverage-lcov
 # ── Building / checking ─────────────────────────────────────
 
 build:
-    cargo build --workspace --all-targets
+    {{cargo}} build --workspace --all-targets
 
 # ── Documentation ───────────────────────────────────────────
 
@@ -163,7 +170,7 @@ setup:
 # fast tier of `just lint` (fmt + typos + taplo + markdown); the heavier
 # checks (clippy, deny, tests) live in `just pre-push`.
 pre-commit: fmt-check lint-typos lint-taplo lint-markdown
-    cargo check --all-targets --workspace --quiet
+    {{cargo}} check --all-targets --workspace --quiet
 
 # Slower checks run on every git push via pre-commit. Mirrors `just
 # ci` so anything red in CI was already red locally; the gap that
@@ -174,6 +181,12 @@ pre-push:
 # ── CI ──────────────────────────────────────────────────────
 
 ci: fmt-check lint test build doc ci-coverage
+
+# Agent-facing CI: same steps as `ci`, but routes the compile-heavy recipes
+# (clippy/nextest/test/build) through rtk for token-compressed output. Prefer
+# this over `ci` when an agent runs the suite. Same pass/fail semantics.
+ci-rtk:
+    RTK_CARGO="rtk cargo" just ci
 
 # Best-effort coverage summary. Prints to stdout but does not fail CI
 # (no minimum threshold set).
