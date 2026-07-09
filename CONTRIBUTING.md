@@ -33,16 +33,22 @@ regardless.
 
 ## Everyday workflow
 
-| Command        | What it does                                   |
-| -------------- | ---------------------------------------------- |
-| `just`         | Lists every recipe.                            |
-| `just fmt`     | Rustfmt + taplo across the workspace.          |
-| `just lint`    | fmt-check, clippy, typos, taplo, cargo-deny.   |
-| `just test`    | `cargo nextest run` + doctests.                |
-| `just build`   | Workspace + all targets.                       |
-| `just doc`     | Rustdoc with `-D warnings`.                    |
-| `just ci`      | The exact set canonical-gate runs in CI.       |
-| `just mutants` | `cargo mutants` mutation testing (not in CI).  |
+| Command             | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| `just`              | Lists every recipe.                                 |
+| `just fmt`          | Rustfmt + taplo across the workspace.               |
+| `just lint`         | fmt-check, clippy, typos, taplo, cargo-deny.        |
+| `just test`         | `cargo nextest run` + doctests.                     |
+| `just build`        | Workspace + all targets.                            |
+| `just doc`          | Rustdoc with `-D warnings`.                         |
+| `just ci`           | The exact set canonical-gate runs in CI.            |
+| `just mutants`      | Full `cargo mutants` sweep (manual, not in CI).     |
+| `just mutants-diff` | Diff-scoped mutation gate; CI runs it per push/PR.  |
+
+Mutation runs execute the suite under nextest, whose slow-timeout
+(`.config/nextest.toml`) kills hung tests before cargo-mutants' own timeout,
+so infinite-loop mutants count as caught rather than as timeouts (see
+`.cargo/mutants.toml`).
 
 ## Git hooks
 

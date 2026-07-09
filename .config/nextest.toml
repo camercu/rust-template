@@ -1,0 +1,6 @@
+[profile.default]
+# Terminate hung tests at 2x5s. Must stay under cargo-mutants' 20s minimum
+# timeout so infinite-loop mutants fail the suite (caught) rather than time
+# out; see .cargo/mutants.toml. Raise `period` if the project grows tests
+# that are legitimately slower than 5s.
+slow-timeout = { period = "5s", terminate-after = 2 }

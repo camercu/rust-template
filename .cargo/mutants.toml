@@ -1,0 +1,9 @@
+# Run the test suite under nextest so its slow-timeout (.config/nextest.toml)
+# kills hung tests before cargo-mutants' own timeout fires. Infinite-loop
+# mutants then fail the suite and are counted as caught instead of as
+# timeouts.
+test_tool = "nextest"
+
+# If the crate grows feature-gated code, compile it into mutants runs here —
+# mutants in cfg'd-out code trivially survive:
+# additional_cargo_args = ["--features", "some-feature"]

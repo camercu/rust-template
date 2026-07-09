@@ -111,9 +111,20 @@ doc:
 
 # ── Mutation testing ────────────────────────────────────────
 
-# Not part of CI — run periodically to find test coverage gaps.
+# Full sweep; not part of CI — run periodically to find test coverage gaps.
 mutants *args:
     cargo mutants {{args}}
+
+# Mutation-test only code changed since `base` (including uncommitted
+# changes): fast gate that new/changed code arrives with killing tests,
+# without paying for a full sweep. CI runs this per push/PR.
+mutants-diff base="origin/main":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    diff_file=$(mktemp)
+    trap 'rm -f "$diff_file"' EXIT
+    git diff "$(git merge-base "{{base}}" HEAD)" > "$diff_file"
+    cargo mutants --in-diff "$diff_file"
 
 # ── Tool versions ───────────────────────────────────────────
 

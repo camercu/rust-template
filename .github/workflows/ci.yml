@@ -89,6 +89,54 @@ jobs:
       - name: just ci-stable
         run: just ci-stable
 
+  mutants-diff:
+    # Mutation-tests only the code changed by this push/PR: fast gate
+    # that changed code arrives with tests that kill its mutants. Full
+    # sweeps stay manual (`just mutants`).
+    name: Mutants (diff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse .tool-versions
+        id: tools
+        run: |
+          while read -r name version; do
+            # GitHub output names use underscores; tool names use hyphens.
+            echo "${name//-/_}=${version}" >> "$GITHUB_OUTPUT"
+          done < <(grep -v '^#' .tool-versions | grep -v '^$')
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.tools.outputs.rust }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just@${{ steps.tools.outputs.just }},cargo-nextest@${{ steps.tools.outputs.cargo_nextest }},cargo-mutants@${{ steps.tools.outputs.cargo_mutants }}
+
+      - name: just mutants-diff
+        env:
+          # `github.event.before` is all-zeroes on the first push to a
+          # new branch, and is orphaned (unreachable in the fetched
+          # history) after a force-push. In either case fall back to
+          # the parent commit.
+          PR_BASE: origin/${{ github.base_ref }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="$PR_BASE"
+          elif [ "$PUSH_BEFORE" = "0000000000000000000000000000000000000000" ] \
+              || ! git cat-file -e "${PUSH_BEFORE}^{commit}" 2>/dev/null; then
+            base=HEAD~1
+          else
+            base="$PUSH_BEFORE"
+          fi
+          just mutants-diff "$base"
+
   commitlint:
     # Runs on both pull_request and push so direct-to-main commits
     # are linted too. Branch protection may permit direct pushes;
