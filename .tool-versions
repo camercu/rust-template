@@ -4,6 +4,7 @@ rust {{rust_toolchain_version}}
 just 1.49.0
 cargo-deny 0.19.1
 cargo-nextest 0.9.133
+cargo-mutants 27.0.0
 typos-cli 1.45.0
 taplo-cli 0.10.0
 markdownlint-cli2 0.21.0

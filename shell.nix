@@ -16,6 +16,7 @@ pkgs.mkShell {
     pre-commit
     cargo-deny
     cargo-nextest
+    cargo-mutants
     typos
     taplo
     markdownlint-cli2

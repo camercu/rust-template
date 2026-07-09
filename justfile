@@ -109,6 +109,12 @@ build:
 doc:
     RUSTDOCFLAGS="{{warnings}}" cargo doc --workspace --no-deps
 
+# ── Mutation testing ────────────────────────────────────────
+
+# Not part of CI — run periodically to find test coverage gaps.
+mutants *args:
+    cargo mutants {{args}}
+
 # ── Tool versions ───────────────────────────────────────────
 
 check-tool-versions:
@@ -121,6 +127,7 @@ check-tool-versions:
             just)          actual=$(just --version | awk '{print $2}') ;;
             cargo-deny)    actual=$(cargo-deny --version | awk '{print $2}') ;;
             cargo-nextest) actual=$(cargo nextest --version | head -1 | awk '{print $2}') ;;
+            cargo-mutants) actual=$(cargo mutants --version | awk '{print $2}') ;;
             typos-cli)     actual=$(typos --version | awk '{print $2}') ;;
             taplo-cli)     actual=$(taplo --version | awk '{print $2}') ;;
             markdownlint-cli2) actual=$(markdownlint-cli2 --version 2>&1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//') ;;
