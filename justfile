@@ -104,6 +104,11 @@ alias cov-lcov := coverage-lcov
 build:
     {{cargo}} build --workspace --all-targets
 
+# Remove build artifacts and cargo-mutants output.
+clean:
+    cargo clean
+    rm -rf mutants.out mutants.out.old
+
 # ── Documentation ───────────────────────────────────────────
 
 doc:

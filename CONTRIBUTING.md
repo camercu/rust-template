@@ -44,6 +44,7 @@ regardless.
 | `just ci`           | The exact set canonical-gate runs in CI.            |
 | `just mutants`      | Full `cargo mutants` sweep (manual, not in CI).     |
 | `just mutants-diff` | Diff-scoped mutation gate; CI runs it per push/PR.  |
+| `just clean`        | Removes build artifacts and cargo-mutants output.   |
 
 Mutation runs execute the suite under nextest, whose slow-timeout
 (`.config/nextest.toml`) kills hung tests before cargo-mutants' own timeout,
