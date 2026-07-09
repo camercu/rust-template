@@ -12,6 +12,9 @@
 *.profraw
 *.profdata
 
+# Mutation testing artifacts (cargo-mutants)
+/mutants.out*
+
 # direnv / Nix
 /.direnv/
 /.envrc.local
