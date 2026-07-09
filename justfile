@@ -104,7 +104,9 @@ alias cov-lcov := coverage-lcov
 build:
     {{cargo}} build --workspace --all-targets
 
-# Remove build artifacts and cargo-mutants output.
+# Remove run artifacts: build tree and cargo-mutants output. Deliberately
+# keeps node_modules (environment, restored by npm ci) and any committed
+# test corpora (e.g. proptest-regressions).
 clean:
     cargo clean
     rm -rf mutants.out mutants.out.old
