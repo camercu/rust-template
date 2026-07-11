@@ -4,6 +4,10 @@
 # timeouts.
 test_tool = "nextest"
 
+# Keep cargo-mutants' own timeout above nextest's 2x10s kill (20s) so nextest
+# always fires first; without this the default minimum is exactly 20s — a race.
+minimum_test_timeout = 30
+
 # If the crate grows feature-gated code, compile it into mutants runs here —
 # mutants in cfg'd-out code trivially survive:
 # additional_cargo_args = ["--features", "some-feature"]
