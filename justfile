@@ -104,6 +104,22 @@ alias cov-lcov := coverage-lcov
 build:
     {{cargo}} build --workspace --all-targets
 
+# Verify the crate still compiles on its declared MSRV (Cargo.toml
+# `rust-version`). Dormant while the MSRV equals the pinned toolchain;
+# once a project lowers its MSRV below the toolchain, this catches use of
+# newer language/std features that would break MSRV consumers. CI installs
+# the MSRV toolchain first; locally, `rustup` must have it.
+check-msrv:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    msrv=$(cargo metadata --format-version 1 --no-deps \
+        | grep -o '"rust_version":"[^"]*"' | head -1 | cut -d'"' -f4)
+    if [ -z "${msrv}" ]; then
+        echo "no rust-version declared in Cargo.toml; skipping MSRV check"
+        exit 0
+    fi
+    cargo "+${msrv}" check --workspace
+
 # Remove run artifacts: build tree and cargo-mutants output. Deliberately
 # keeps node_modules (environment, restored by npm ci) and any committed
 # test corpora (e.g. proptest-regressions).
@@ -205,7 +221,7 @@ pre-push:
 
 # ── CI ──────────────────────────────────────────────────────
 
-ci: fmt-check lint test build doc ci-coverage
+ci: fmt-check lint test build check-msrv doc ci-coverage
 
 # Agent-facing CI: same steps as `ci`, but routes the compile-heavy recipes
 # (clippy/nextest/test/build) through rtk for token-compressed output. Prefer

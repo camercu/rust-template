@@ -67,6 +67,20 @@ jobs:
             | tar -xz -C "$HOME/.local/bin" actionlint
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
+      # Install the crate's declared MSRV toolchain (Cargo.toml
+      # `rust-version`) when it differs from the pinned toolchain, so the
+      # `check-msrv` step in `just ci` can build against it. No-op while the
+      # MSRV equals the pinned toolchain.
+      - name: Install MSRV toolchain
+        env:
+          PINNED_RUST: ${{ steps.tools.outputs.rust }}
+        run: |
+          msrv=$(cargo metadata --format-version 1 --no-deps \
+            | grep -o '"rust_version":"[^"]*"' | head -1 | cut -d'"' -f4)
+          if [ -n "${msrv}" ] && [ "${msrv}" != "${PINNED_RUST}" ]; then
+            rustup toolchain install "${msrv}" --profile minimal
+          fi
+
       - name: just ci
         run: just ci
 
