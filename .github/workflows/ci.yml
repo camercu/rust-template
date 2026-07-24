@@ -48,16 +48,22 @@ jobs:
           node-version-file: .tool-versions
 
       - name: Install markdownlint-cli2
-        run: npm install -g markdownlint-cli2@${{ steps.tools.outputs.markdownlint_cli2 }}
+        env:
+          # Pass the version through the environment, not `${{ }}` inlined
+          # into the shell: .tool-versions is editable in a forked PR, so a
+          # crafted version string would otherwise inject into the command.
+          MDL_VERSION: ${{ steps.tools.outputs.markdownlint_cli2 }}
+        run: npm install -g "markdownlint-cli2@${MDL_VERSION}"
 
       # actionlint is a Go binary, not a cargo crate, so install-action
       # can't provide it. Pull the pinned release tarball straight from
       # GitHub (version from .tool-versions) onto PATH.
       - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: ${{ steps.tools.outputs.actionlint }}
         run: |
-          ver=${{ steps.tools.outputs.actionlint }}
           mkdir -p "$HOME/.local/bin"
-          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ver}/actionlint_${ver}_linux_amd64.tar.gz" \
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
             | tar -xz -C "$HOME/.local/bin" actionlint
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
