@@ -164,7 +164,13 @@ check-tool-versions:
             cargo-mutants) actual=$(cargo mutants --version | awk '{print $2}') ;;
             typos-cli)     actual=$(typos --version | awk '{print $2}') ;;
             taplo-cli)     actual=$(taplo --version | awk '{print $2}') ;;
-            markdownlint-cli2) actual=$(markdownlint-cli2 --version 2>&1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//') ;;
+            markdownlint-cli2)
+                # `markdownlint-cli2 --version` prints the version but exits
+                # non-zero (it also reports that no globs were given), which
+                # `set -o pipefail` would turn into a silent recipe failure.
+                raw=$(markdownlint-cli2 --version 2>&1 || true)
+                actual=$(printf '%s\n' "$raw" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+                ;;
             actionlint)    actual=$(actionlint --version | head -1) ;;
             cargo-llvm-cov) actual=$(cargo llvm-cov --version | awk '{print $2}') ;;
             nodejs)        actual=$(node --version | sed 's/^v//') ;;
