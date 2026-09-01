@@ -7,10 +7,10 @@
 - **Task runner** via `justfile` with recipes for fmt / lint / test / build / doc / ci / pre-commit / pre-push / check-tool-versions
 - **Pre-commit hooks** for fast checks (fmt-check + typos + cargo check) and slow checks (clippy + test + doc)
 - **Conventional Commits enforcement** via `commitlint` (commit-msg hook + CI job)
-- **Dependency audit** via `cargo-deny` (advisories, licenses, bans, sources)
+- **Dependency audit** via `cargo-deny` (advisories, licenses, bans, sources), gated on every push and re-run nightly so a newly published advisory surfaces on its own schedule
 - **Spell check** via `typos`
 - **TOML formatting** via `taplo`
-- **GitHub Actions CI** with a canonical-gate job (pinned tools), stable-advisory job (continue-on-error), and PR commitlint job
+- **GitHub Actions CI** with a canonical-gate job (pinned tools), stable-advisory job (latest stable), mutants-diff job (mutation-tests the diff), commitlint job, and a nightly supply-chain audit job
 - **Automated releases** via [`semantic-release`](https://semantic-release.gitbook.io/) + [`semantic-release-cargo`](https://www.npmjs.com/package/semantic-release-cargo): every successful CI run on `main` triggers a release pass that bumps `Cargo.toml` + `Cargo.lock`, appends a `CHANGELOG.md` entry, pushes the `chore(release): <version>` commit directly to `main`, tags `v<version>`, and cuts a GitHub Release with the generated notes. The job is gated on a GitHub `environment: release` (one-time setup under *Settings → Environments*) so secrets and required reviewers live in one place. Crates.io publish is wired but disabled by default — flipping `"publish": false → true` in the `semantic-release-cargo` plugin block of `.releaserc.json` turns it on once `CRATES_API_KEY` is set in the environment. Bump rules are configurable in `.releaserc.json`'s `releaseRules` (default: `feat`/breaking → minor, `fix`/`perf`/`revert` → patch, `fix(ci)`/`chore`/etc. → skipped).
 - **Workspace lints**: `forbid(unsafe_code)`, `warn(missing_docs)`, clippy `all` + `pedantic`
 
@@ -79,6 +79,7 @@ rust-template/
 ├── .prettierrc.yaml
 ├── scripts/setup-dev.sh
 ├── .github/workflows/ci.yml
+├── .github/workflows/audit.yml    # nightly `just lint-deny` (advisory clock)
 ├── .github/workflows/release.yml
 ├── .releaserc.json             # semantic-release config (cargo publish disabled)
 ├── .taplo.toml                 # taplo exclusions (node_modules, target)

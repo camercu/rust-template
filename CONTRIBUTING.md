@@ -99,10 +99,21 @@ the convention silently drops your commit from the next release.
 | ---------------------- | ---------------- | --------------------------------------------------------- |
 | Canonical gate         | `.tool-versions` | Blocks PR merge.                                          |
 | Latest stable advisory | latest stable    | Blocks PR merge — drives `.tool-versions` bumps.          |
+| Mutants (diff)         | `.tool-versions` | Blocks PR merge — changed code must kill its mutants.     |
 | Commitlint             | n/a              | Blocks PR merge / push.                                   |
+| Supply chain           | `.tool-versions` | Nightly `just lint-deny`; notifies, blocks nothing.       |
 
 Dependabot opens weekly PRs against cargo, GitHub Actions, npm, and
 pre-commit hook dependencies.
+
+Those weekly PRs only bump crates named in `Cargo.toml`. A vulnerable
+transitive-only dependency is never among them, so it sits in
+`Cargo.lock` until `cargo deny check advisories` trips over it. Enable
+**Dependabot alerts** and **Dependabot security updates** (*Settings →
+Advanced Security*) on the generated repository: alerts are what turn a
+new RUSTSEC entry into a lockfile PR instead of a red canonical gate on
+somebody else's change. The nightly Supply chain job is the backstop
+that tells you when that has not happened.
 
 ## Release
 
