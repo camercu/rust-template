@@ -11,3 +11,14 @@ minimum_test_timeout = 30
 # If the crate grows feature-gated code, compile it into mutants runs here —
 # mutants in cfg'd-out code trivially survive:
 # additional_cargo_args = ["--features", "some-feature"]
+
+# Excluding a mutant no test can kill — record the reason beside each entry:
+#
+# - An equivalent mutant (e.g. `|` -> `^` over disjoint bitflags, which
+#   yields the same value): exclude by description, anchored on the function
+#   name with `$` so it cannot also hide the same mutation elsewhere:
+#       exclude_re = ['replace \| with \^ in open_flags$']
+# - Code compiled out on the host (a per-OS fallback): mark the item
+#   `#[cfg_attr(test, mutants::skip)]` so the exclusion moves with the code.
+#   Never exclude by file line number: it goes stale the moment the file above
+#   it grows, and then silently excludes whatever moved into that line.
