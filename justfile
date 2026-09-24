@@ -139,7 +139,7 @@ mutants *args:
     cargo mutants {{args}}
 
 # Mutation-test only code changed since `base` (including uncommitted
-# changes): fast gate that new/changed code arrives with killing tests,
+# changes and new, untracked files): fast gate that new/changed code arrives with killing tests,
 # without paying for a full sweep. CI runs this per push/PR.
 mutants-diff base="origin/main":
     #!/usr/bin/env bash
@@ -147,6 +147,10 @@ mutants-diff base="origin/main":
     diff_file=$(mktemp)
     trap 'rm -f "$diff_file"' EXIT
     git diff "$(git merge-base "{{base}}" HEAD)" > "$diff_file"
+    # `git diff` leaves out files git does not track yet; add each as new.
+    git ls-files -z --others --exclude-standard | while IFS= read -r -d '' f; do
+        git diff --no-index -- /dev/null "$f" >> "$diff_file" || true
+    done
     cargo mutants --in-diff "$diff_file"
 
 # ── Tool versions ───────────────────────────────────────────
