@@ -157,6 +157,14 @@ jobs:
           fi
           just mutants-diff "$base"
 
+      # A survivor has to be triaged from cargo-mutants' own record of it:
+      # which mutation, and which tests stayed green.
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: mutants-out
+          path: mutants.out
+
   commitlint:
     # Runs on both pull_request and push so direct-to-main commits
     # are linted too. Branch protection may permit direct pushes;
