@@ -66,9 +66,10 @@ lint-deny:
 
 # Two passes because nextest does not yet support doc-tests upstream;
 # `cargo test --doc` covers them, `nextest` covers unit + integration
-# tests with parallel execution + better output.
+# tests with parallel execution + better output. `--no-tests=warn`
+# keeps a freshly generated project (no tests yet) green.
 test:
-    {{cargo}} nextest run --workspace
+    {{cargo}} nextest run --workspace --no-tests=warn
     {{cargo}} test --workspace --doc
 
 # Latest-stable sanity check. Skips any `compile_fixtures` test
@@ -79,7 +80,7 @@ test:
 # stable ticks. The canonical-gate job (`just test`) runs every
 # test, including the fixtures, on the pinned toolchain.
 test-stable:
-    cargo {{stable_toolchain}} nextest run --workspace -E 'not test(compile_fixtures)'
+    cargo {{stable_toolchain}} nextest run --workspace --no-tests=warn -E 'not test(compile_fixtures)'
     cargo {{stable_toolchain}} test --workspace --doc
 
 # ── Coverage ────────────────────────────────────────────────
