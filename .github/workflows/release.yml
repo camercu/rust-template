@@ -34,7 +34,15 @@ jobs:
     # Skip the job body entirely if CI failed/was cancelled. The
     # workflow_run trigger fires regardless of upstream conclusion;
     # the conclusion check is the actual gate.
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    #
+    # Releases are opt-in: set the repository variable
+    # RELEASE_ENABLED=true to turn them on. Before the first enable, tag
+    # the current commit `v0.1.0`; semantic-release otherwise makes its
+    # first release 1.0.0, which promises a stable API a new project does
+    # not have.
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success'
+          && vars.RELEASE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: release
