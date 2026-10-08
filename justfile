@@ -137,7 +137,7 @@ doc:
 
 # Full sweep; not part of CI — run periodically to find test coverage gaps.
 mutants *args:
-    cargo mutants {{args}}
+    just cargo-mutants {{args}}
 
 # Mutation-test only code changed since `base` (including uncommitted
 # changes and new, untracked files): fast gate that new/changed code arrives with killing tests,
@@ -152,7 +152,25 @@ mutants-diff base="origin/main":
     git ls-files -z --others --exclude-standard | while IFS= read -r -d '' f; do
         git diff --no-index -- /dev/null "$f" >> "$diff_file" || true
     done
-    cargo mutants --in-diff "$diff_file"
+    just cargo-mutants --in-diff "$diff_file"
+
+# cargo-mutants, with a timed-out mutant counted as caught: its tests did not
+# pass. Exit 3 cannot say that alone, because cargo-mutants returns it whenever
+# any mutant timed out, ahead of the 2 for a missed one; so 3 passes only when
+# `mutants.out/missed.txt` exists and is empty. An earlier run's file is removed
+# first, so a run that writes elsewhere (`-o DIR`) finds none and 3 fails.
+[private]
+cargo-mutants *args:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    rm -f mutants.out/missed.txt
+    cargo mutants {{args}} && exit 0
+    rc=$?
+    if [ "$rc" -eq 3 ] && [ -f mutants.out/missed.txt ] && [ ! -s mutants.out/missed.txt ]; then
+        echo "cargo-mutants: some mutants timed out and none were missed; a timeout counts as caught" >&2
+        exit 0
+    fi
+    exit "$rc"
 
 # ── Tool versions ───────────────────────────────────────────
 

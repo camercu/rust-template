@@ -47,9 +47,10 @@ regardless.
 | `just clean`        | Removes build artifacts and cargo-mutants output.   |
 
 Mutation runs execute the suite under nextest, whose slow-timeout
-(`.config/nextest.toml`) kills hung tests before cargo-mutants' own timeout,
-so infinite-loop mutants count as caught rather than as timeouts (see
-`.cargo/mutants.toml`).
+(`.config/nextest.toml`) kills hung tests, so an infinite-loop mutant fails its
+tests and counts as caught. A mutant that still reaches cargo-mutants' own
+timeout counts as caught too: its tests did not pass (see `.cargo/mutants.toml`
+and the justfile's `cargo-mutants` recipe).
 
 ## Git hooks
 
