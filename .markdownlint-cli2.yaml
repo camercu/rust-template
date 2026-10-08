@@ -1,9 +1,12 @@
-# Markdown lint config (markdownlint-cli2). MD013/line-length is
-# disabled: it fights reference tables and fenced code, which can't be
-# hard-wrapped at a column. The remaining rules enforce structure —
-# heading increments, single H1, fenced-code languages, no bare URLs.
+# Markdown lint config (markdownlint-cli2). Structure rules (heading
+# increments, single H1, fenced-code languages, no bare URLs) plus
+# line length for prose.
 config:
-  MD013: false
+  # Prose wraps at 80 columns. Tables and fenced code cannot wrap at a
+  # column without breaking, so they are exempt.
+  MD013:
+    tables: false
+    code_blocks: false
   # Tables use `| cell |` spacing; pin the style so the "consistent"
   # default can't be poisoned by a single compact table elsewhere.
   MD060:
