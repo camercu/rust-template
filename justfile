@@ -121,6 +121,24 @@ check-msrv:
     fi
     cargo "+${msrv}" check --workspace
 
+# Test the crate as a consumer receives it. Only the files `cargo package`
+# selects ship (Cargo.toml's `include`/`exclude`), so a test or build script
+# that reads a file outside them passes in the checkout and fails for whoever
+# builds the published crate. This unpacks the packaged crate and runs its
+# tests there, on the plain harness, so a test that only passes under nextest
+# fails here too. --allow-dirty: it tests the files about to be committed;
+# whether they are committed is a publishing question.
+package-test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    work=$(mktemp -d)
+    trap 'rm -rf "$work"' EXIT
+    cargo package --allow-dirty --target-dir "$work/target"
+    mkdir "$work/src"
+    tar xf "$work"/target/package/*.crate -C "$work/src" --strip-components 1
+    cd "$work/src"
+    cargo test
+
 # Remove run artifacts: build tree and cargo-mutants output. Deliberately
 # keeps node_modules (environment, restored by npm ci) and any committed
 # test corpora (e.g. proptest-regressions).
@@ -246,11 +264,11 @@ pre-commit: fmt-check lint-typos lint-taplo lint-markdown
 # ci` so anything red in CI was already red locally; the gap that
 # previously skipped lint-taplo allowed taplo drift to land on main.
 pre-push:
-    RUSTFLAGS="{{warnings}}" RUSTDOCFLAGS="{{warnings}}" just lint test doc build
+    RUSTFLAGS="{{warnings}}" RUSTDOCFLAGS="{{warnings}}" just lint test package-test doc build
 
 # ── CI ──────────────────────────────────────────────────────
 
-ci: fmt-check lint test build check-msrv doc ci-coverage
+ci: fmt-check lint test package-test build check-msrv doc ci-coverage
 
 # Agent-facing CI: same steps as `ci`, but routes the compile-heavy recipes
 # (clippy/nextest/test/build) through rtk for token-compressed output. Prefer

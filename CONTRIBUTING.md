@@ -37,8 +37,9 @@ regardless.
 | ------------------- | --------------------------------------------------- |
 | `just`              | Lists every recipe.                                 |
 | `just fmt`          | Rustfmt + taplo across the workspace.               |
-| `just lint`         | fmt-check, clippy, typos, taplo, cargo-deny.        |
+| `just lint`         | Every linter: Rust, spelling, TOML, Markdown, CI.   |
 | `just test`         | `cargo nextest run` + doctests.                     |
+| `just package-test` | Tests the crate as `cargo package` ships it.        |
 | `just build`        | Workspace + all targets.                            |
 | `just doc`          | Rustdoc with `-D warnings`.                         |
 | `just ci`           | The exact set canonical-gate runs in CI.            |
@@ -56,11 +57,11 @@ and the justfile's `cargo-mutants` recipe).
 
 Three tiers, wired into the local clone by `just setup`:
 
-| Hook         | Stage        | What runs (recipe)                                                       |
-| ------------ | ------------ | ------------------------------------------------------------------------ |
-| `pre-commit` | every commit | `just pre-commit` — fmt-check, lint-typos, lint-taplo, `cargo check`     |
-| `pre-push`   | every push   | `just pre-push` — `just lint test doc build` (mirrors `just ci`)         |
-| `commit-msg` | every commit | `commitlint` against Conventional Commits                                |
+| Hook         | Stage        | What runs (recipe)                                                           |
+| ------------ | ------------ | ---------------------------------------------------------------------------- |
+| `pre-commit` | every commit | `just pre-commit`: fmt-check, typos, taplo, Markdown, `cargo check`          |
+| `pre-push`   | every push   | `just pre-push`: `just lint test package-test doc build` (mirrors `just ci`) |
+| `commit-msg` | every commit | `commitlint` against Conventional Commits                                    |
 
 Push hooks are intentionally heavy: they mirror CI exactly so a green
 local push implies a green canonical-gate.

@@ -10,7 +10,7 @@ dev shell via [`shell.nix`](./shell.nix) + [`.tool-versions`](./.tool-versions).
 ```sh
 nix-shell           # or: direnv allow
 just setup          # installs git hooks + npm devDeps
-just ci             # full check chain (fmt-check, lint, test, build, doc)
+just ci             # the full check chain CI runs
 ```
 
 `just --list` enumerates every available recipe.
