@@ -1,0 +1,36 @@
+# Template self-test: generate each crate kind and run its `just ci`.
+# The shipped workflows skip this repo, so this is what gives Dependabot
+# PRs on the template a verdict. Kept out of generated projects by the
+# [template] ignore list in cargo-generate.toml.
+name: Template
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: template-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    name: Self-test (${{ matrix.kind }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [library, binary]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Generate and run just ci
+        run: scripts/test-template.sh ${{ matrix.kind }}

@@ -20,6 +20,17 @@ for kind in "${kinds[@]}"; do
       --define gh_username=test --define 'license=MIT OR Apache-2.0' \
       --define kind=$kind" \
     >/dev/null)
+  # Template-only files must not ship (the [template] ignore list).
+  leaked=0
+  for f in scripts/test-template.sh .github/workflows/template.yml; do
+    if [ -e "$scratch/$name/$f" ]; then
+      echo "FAIL $kind: template-only $f shipped"
+      leaked=1
+    fi
+  done
+  [ "$leaked" = 0 ] && echo "ok   $kind: template-only files not shipped"
+  fails=$((fails + leaked))
+
   if (cd "$scratch/$name" && nix-shell --run 'just setup && just ci') >"$scratch/$kind.log" 2>&1; then
     echo "ok   $kind: just ci"
   else
