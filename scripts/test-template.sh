@@ -28,5 +28,28 @@ for kind in "${kinds[@]}"; do
     fails=$((fails + 1))
   fi
 
+  # Git hooks export GIT_DIR. cargo-deny (lint-deny) updates its advisory db
+  # with `git -C <db> fetch` + `reset --hard FETCH_HEAD`, and -C does not
+  # override GIT_DIR: inside a hook, that fetched the project's own origin
+  # and reset HEAD to it, dropping unpushed commits (seen pushing a
+  # submodule). The project here has one commit its origin lacks. Fixture
+  # commits skip hooks: `just setup` installed commitlint.
+  if (
+    set -e
+    cd "$scratch/$name"
+    git init -q --bare "$scratch/origin-$kind.git"
+    git remote add origin "$scratch/origin-$kind.git"
+    git add -A && git -c user.name=t -c user.email=t@t -c core.hooksPath=/dev/null commit -q -m generated
+    git -c core.hooksPath=/dev/null push -q origin HEAD:main
+    git -c user.name=t -c user.email=t@t -c core.hooksPath=/dev/null commit -q --allow-empty -m unpushed
+    head=$(git rev-parse HEAD)
+    GIT_DIR="$PWD/.git" nix-shell --run 'just lint-deny' >/dev/null 2>&1 || true
+    [ "$(git rev-parse HEAD)" = "$head" ]
+  ) >>"$scratch/$kind.log" 2>&1; then
+    echo "ok   $kind: recipes ignore an inherited GIT_DIR"
+  else
+    echo "FAIL $kind: lint-deny under a hook's GIT_DIR reset away an unpushed commit"
+    fails=$((fails + 1))
+  fi
 done
 [ "$fails" = 0 ]
