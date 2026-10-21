@@ -13,10 +13,17 @@ scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
 fails=0
 
+# cargo-generate from the template's own nixpkgs pin, so local and CI
+# runs agree on its version.
+nixpkgs=$(sed -n 's/^ *url = "\(.*\)";$/\1/p' "$template/shell.nix")
+[ -n "$nixpkgs" ] || { echo "FAIL no nixpkgs url in shell.nix"; exit 1; }
+
 for kind in "${kinds[@]}"; do
   name="tt-$kind"
-  (cd "$scratch" && nix-shell -p cargo-generate --run \
-    "cargo generate --path '$template' --name $name --silent \
+  # --vcs none: `just setup` must create the repository itself, as it
+  # does for a cargo-generate built without git support.
+  (cd "$scratch" && nix-shell -I "nixpkgs=$nixpkgs" -p cargo-generate --run \
+    "cargo generate --path '$template' --name $name --silent --vcs none \
       --define gh_username=test --define 'license=MIT OR Apache-2.0' \
       --define kind=$kind" \
     >/dev/null)
