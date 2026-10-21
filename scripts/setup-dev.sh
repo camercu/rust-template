@@ -59,6 +59,13 @@ nix-shell --run '
     echo "{{project-name}}: setup-dev — installing Node devDependencies for commitlint…"
     npm ci --no-audit --no-fund
 
+    # cargo-generate built without its `git` feature (nixpkgs 0.25)
+    # skips `git init`, and pre-commit needs a repository.
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "{{project-name}}: setup-dev — no git repository; running git init…"
+        git init -q
+    fi
+
     echo "{{project-name}}: setup-dev — installing git hooks via pre-commit…"
     pre-commit install --install-hooks \
         --hook-type pre-commit \
