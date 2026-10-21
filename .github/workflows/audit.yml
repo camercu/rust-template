@@ -32,6 +32,9 @@ env:
 jobs:
   supply-chain:
     name: Supply chain
+    # Skipped in the template repo itself: its sources hold {{ }}
+    # placeholders until cargo-generate fills them in.
+    if: github.repository != 'camercu/rust-template'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

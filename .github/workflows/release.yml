@@ -42,7 +42,8 @@ jobs:
     # not have.
     if: >-
       ${{ github.event.workflow_run.conclusion == 'success'
-          && vars.RELEASE_ENABLED == 'true' }}
+          && vars.RELEASE_ENABLED == 'true'
+          && github.repository != 'camercu/rust-template' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: release
