@@ -58,7 +58,7 @@ You'll be prompted for:
 | `authors` | `Name <email@example.com>` |
 | `gh_username` | for the repository URL |
 | `license` | one of `MIT OR Apache-2.0` (default), `MIT`, `Apache-2.0`, `MPL-2.0` |
-| `kind` | `library` (default) or `binary` |
+| `kind` | `library` (default) or `binary` (library plus a thin `main.rs`) |
 | `rust_toolchain_version` | pinned Rust version (default `1.88.0`) |
 
 After generation:
@@ -106,8 +106,8 @@ rust-template/
 ├── .releaserc.json             # semantic-release config (cargo publish disabled)
 ├── .taplo.toml                 # taplo exclusions (node_modules, target)
 └── src/
-    ├── lib.rs               # included only for kind == "library"
-    └── main.rs              # included only for kind == "binary"
+    ├── lib.rs               # always; holds the logic
+    └── main.rs              # kind == "binary" only; thin entry point
 ```
 
 ## License

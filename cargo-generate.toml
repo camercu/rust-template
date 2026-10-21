@@ -3,8 +3,8 @@ cargo_generate_version = ">=0.21.0"
 # README.md is the template repo's own GitHub-displayed docs and must
 # NOT be shipped to generated projects (which get _README.md renamed by
 # post-script.rhai). LICENSE belongs to the template repo, not generated
-# projects.
-ignore = ["README.md", "LICENSE"]
+# projects, and so does the template's own self-test.
+ignore = ["README.md", "LICENSE", "scripts/test-template.sh"]
 # Liquid-process only these files. Everything else is copied verbatim.
 # This avoids `{{...}}` collisions with the justfile's own variable
 # interpolation syntax and similar template sigils used by other tools.
@@ -52,8 +52,8 @@ default = "1.88.0"
 
 # ── Conditional file removal ────────────────────────────────
 
+# A binary keeps src/lib.rs: logic lives in the library, where unit and
+# doc-tests reach it, and main.rs stays a thin entry point.
 [conditional.'kind == "library"']
 ignore = ["src/main.rs"]
 
-[conditional.'kind == "binary"']
-ignore = ["src/lib.rs"]
