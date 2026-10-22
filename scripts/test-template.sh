@@ -70,7 +70,7 @@ for kind in "${kinds[@]}"; do
     fails=$((fails + 1))
   fi
 
-  # lint-markdown lints what git sees: a file excluded through
+  # Self-globbing linters lint what git sees: a file excluded through
   # .git/info/exclude (the .scratch/ convention) is skipped, an untracked
   # one is not.
   if (
@@ -78,15 +78,19 @@ for kind in "${kinds[@]}"; do
     cd "$scratch/$name"
     bad=$'# Bad\n* list'
     mkdir -p .scratch && printf '%s\n' "$bad" >.scratch/bad.md
+    echo 'a=1' >.scratch/bad.toml
     echo .scratch/ >>.git/info/exclude
-    nix-shell --run 'just lint-markdown'
+    nix-shell --run 'just lint-markdown lint-taplo'
     printf '%s\n' "$bad" >bad.md
     ! nix-shell --run 'just lint-markdown'
     rm bad.md
+    echo 'a=1' >bad.toml
+    ! nix-shell --run 'just lint-taplo'
+    rm bad.toml
   ) >>"$scratch/$kind.log" 2>&1; then
-    echo "ok   $kind: lint-markdown skips excluded files, lints untracked"
+    echo "ok   $kind: linters skip excluded files, lint untracked"
   else
-    echo "FAIL $kind: lint-markdown file selection"
+    echo "FAIL $kind: linter file selection"
     fails=$((fails + 1))
   fi
 done

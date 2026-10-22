@@ -53,8 +53,10 @@ lint-typos:
 # Check that every TOML file in the workspace is formatted by taplo.
 # Runs in `just lint` and `just ci`; surfaces drift before it slips
 # into a review.
+# Files come from git: taplo's own globbing ignores .git/info/exclude.
 lint-taplo:
-    taplo format --check
+    git ls-files -z --cached --others --exclude-standard -- '*.toml' \
+        | xargs -0 taplo format --check
 
 # Lint Markdown structure (headings, lists, fenced-code languages).
 # Config + ignores live in `.markdownlint-cli2.yaml`. Files come from git,
