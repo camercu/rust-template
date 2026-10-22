@@ -69,5 +69,25 @@ for kind in "${kinds[@]}"; do
     echo "FAIL $kind: lint-deny under a hook's GIT_DIR reset away an unpushed commit"
     fails=$((fails + 1))
   fi
+
+  # lint-markdown lints what git sees: a file excluded through
+  # .git/info/exclude (the .scratch/ convention) is skipped, an untracked
+  # one is not.
+  if (
+    set -e
+    cd "$scratch/$name"
+    bad=$'# Bad\n* list'
+    mkdir -p .scratch && printf '%s\n' "$bad" >.scratch/bad.md
+    echo .scratch/ >>.git/info/exclude
+    nix-shell --run 'just lint-markdown'
+    printf '%s\n' "$bad" >bad.md
+    ! nix-shell --run 'just lint-markdown'
+    rm bad.md
+  ) >>"$scratch/$kind.log" 2>&1; then
+    echo "ok   $kind: lint-markdown skips excluded files, lints untracked"
+  else
+    echo "FAIL $kind: lint-markdown file selection"
+    fails=$((fails + 1))
+  fi
 done
 [ "$fails" = 0 ]
