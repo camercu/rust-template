@@ -1,7 +1,7 @@
 # Dependabot keeps every dependency surface (cargo, GitHub Actions,
 # npm devDependencies, pre-commit hooks) at supported versions
 # without manual cargo update / npm update / pre-commit autoupdate
-# chores. Weekly schedule trades freshness for review-fatigue floor.
+# chores. Monthly schedule trades freshness for less review load.
 #
 # Conventional Commit type set to `chore(deps)` so semantic-release's
 # commit-analyzer skips them (the `chore` type has no release rule in
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: cargo
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: chore
       include: scope
@@ -23,7 +23,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: ci
       include: scope
@@ -34,7 +34,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: chore
       include: scope
@@ -45,7 +45,7 @@ updates:
   - package-ecosystem: pre-commit
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: chore
       include: scope
